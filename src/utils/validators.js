@@ -47,10 +47,24 @@ export function validatePriority(priority) {
 }
 
 /**
+ * Validates that a category is a non-empty string.
+ * @param {string} category - The category to validate
+ * @returns {boolean} True if valid, false otherwise
+ * @example
+ * validateCategory('work'); // true
+ * @example
+ * validateCategory(''); // false
+ */
+export function validateCategory(category) {
+  return typeof category === 'string' && category.trim().length > 0;
+}
+
+/**
  * Validates filter options for task queries.
  * @param {Object} options - Filter options
  * @param {string} [options.status] - Optional status filter
  * @param {string} [options.priority] - Optional priority filter
+ * @param {string} [options.category] - Optional category filter
  * @throws {Error} If filter values are invalid
  */
 export function validateFilterOptions(options = {}) {
@@ -59,6 +73,9 @@ export function validateFilterOptions(options = {}) {
   }
   if (options.priority && !validatePriority(options.priority)) {
     throw new Error(`Priority must be one of: ${PRIORITIES.join(', ')}`);
+  }
+  if (options.category !== undefined && !validateCategory(options.category)) {
+    throw new Error('Category filter must be a non-empty string');
   }
 }
 

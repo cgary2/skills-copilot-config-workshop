@@ -1,5 +1,6 @@
 import { generateId } from '../utils/id.js';
-import { getCurrentTimestamp } from '../utils/id.js';
+import { getCurrentTimestamp } from '../utils/time.js';
+import { DEFAULT_PRIORITY, DEFAULT_STATUS, PRIORITIES, STATUSES } from '../constants.js';
 
 /**
  * @typedef {Object} Task
@@ -11,11 +12,6 @@ import { getCurrentTimestamp } from '../utils/id.js';
  * @property {string} createdAt - ISO 8601 timestamp (immutable)
  * @property {string} updatedAt - ISO 8601 timestamp (auto-updated)
  */
-
-const STATUSES = ['todo', 'in-progress', 'done'];
-const PRIORITIES = ['low', 'medium', 'high'];
-const DEFAULT_STATUS = 'todo';
-const DEFAULT_PRIORITY = 'medium';
 
 /**
  * Creates a new Task object with auto-generated id and timestamps.
@@ -72,18 +68,34 @@ export function createTask(title, description = '', status = DEFAULT_STATUS, pri
  * Updates specific fields of a Task object.
  * Immutable fields (id, createdAt) cannot be modified.
  * @param {Task} task - The original task object
- * @param {Partial<Task>} updates - Fields to update (id, createdAt rejected)
+ * @param {Partial<Task>} updates - Fields to update
  * @returns {Task} A new Task object with updates applied
  * @throws {Error} If attempting to modify id or createdAt
  * @throws {Error} If updated field values fail validation
  */
 export function updateTaskFields(task, updates) {
+  if (typeof updates !== 'object' || updates === null || Array.isArray(updates)) {
+    throw new Error('Task updates must be an object');
+  }
+
   // Prevent modification of immutable fields
-  if ('id' in updates && updates.id !== task.id) {
+  if ('id' in updates) {
     throw new Error('Task id is immutable and cannot be modified');
   }
-  if ('createdAt' in updates && updates.createdAt !== task.createdAt) {
+  if ('createdAt' in updates) {
     throw new Error('Task createdAt is immutable and cannot be modified');
+  }
+  if ('updatedAt' in updates) {
+    throw new Error('Task updatedAt is system-managed and cannot be modified');
+  }
+
+  const allowedFields = ['title', 'description', 'status', 'priority'];
+  const updateKeys = Object.keys(updates);
+
+  for (const key of updateKeys) {
+    if (!allowedFields.includes(key)) {
+      throw new Error(`Cannot update unknown field: ${key}`);
+    }
   }
 
   const updatedTask = { ...task };

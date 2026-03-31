@@ -1,5 +1,5 @@
 import { createTask, updateTaskFields, PRIORITIES } from '../models/task.js';
-import { validateFilterOptions, validateSortOptions, validateStatus, validatePriority } from '../utils/validators.js';
+import { validateFilterOptions, validateSortOptions, validateStatus, validatePriority, validateCategory } from '../utils/validators.js';
 
 /**
  * TaskStore manages an in-memory collection of tasks.
@@ -16,11 +16,12 @@ export class TaskStore {
    * @param {string} [description=''] - Task description
    * @param {string} [status='todo'] - Task status
    * @param {string} [priority='medium'] - Task priority
+   * @param {string} [category='general'] - Task category
    * @returns {Object} The created task
    * @throws {Error} If validation fails
    */
-  createTask(title, description = '', status = 'todo', priority = 'medium') {
-    const task = createTask(title, description, status, priority);
+  createTask(title, description = '', status = 'todo', priority = 'medium', category = 'general') {
+    const task = createTask(title, description, status, priority, category);
     this.tasks.push(task);
     return task;
   }
@@ -83,22 +84,24 @@ export class TaskStore {
    * @param {Object} [options] - Filter and sort options
    * @param {string} [options.status] - Filter by status
    * @param {string} [options.priority] - Filter by priority
+   * @param {string} [options.category] - Filter by category
    * @param {string} [options.sortBy='createdAt'] - Sort field ('priority' or 'createdAt')
    * @param {string} [options.order='desc'] - Sort order ('asc' or 'desc')
    * @returns {Object[]} Filtered and sorted tasks
    * @throws {Error} If filter/sort options are invalid
    */
   listTasks(options = {}) {
-    const { status, priority, sortBy = 'createdAt', order = 'desc' } = options;
+    const { status, priority, category, sortBy = 'createdAt', order = 'desc' } = options;
 
     // Validate filter options
-    validateFilterOptions({ status, priority });
+    validateFilterOptions({ status, priority, category });
     validateSortOptions(sortBy, order);
 
     // Filter tasks
     let filtered = this.tasks.filter(task => {
       if (status && task.status !== status) return false;
       if (priority && task.priority !== priority) return false;
+      if (category && task.category !== category) return false;
       return true;
     });
 

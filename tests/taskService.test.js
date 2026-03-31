@@ -32,6 +32,14 @@ import { TaskStore, filterTasks, sortTasks } from '../src/services/taskService.j
   console.log('✓ TaskStore.createTask: creates task with all parameters');
 }
 
+// TaskStore: createTask returns model fields only
+{
+  const store = new TaskStore();
+  const task = store.createTask('Task', '', 'todo', 'medium', 'work');
+  assert.strictEqual(task.category, undefined);
+  console.log('✓ TaskStore.createTask: returns model task shape without category');
+}
+
 // TaskStore: createTask replaces validation errors
 {
   const store = new TaskStore();
@@ -239,6 +247,27 @@ import { TaskStore, filterTasks, sortTasks } from '../src/services/taskService.j
     /Priority must be one of/
   );
   console.log('✓ TaskStore.listTasks: error on invalid priority filter');
+}
+
+// TaskStore: listTasks with category filter returns no matches for current task shape
+{
+  const store = new TaskStore();
+  store.createTask('Work task 1', '', 'todo', 'high', 'work');
+  store.createTask('Personal task', '', 'todo', 'low', 'personal');
+  store.createTask('Work task 2', '', 'in-progress', 'medium', 'work');
+  const workTasks = store.listTasks({ category: 'work' });
+  assert.strictEqual(workTasks.length, 0);
+  console.log('✓ TaskStore.listTasks: category filter yields no matches without category field');
+}
+
+// TaskStore: listTasks error on empty category filter
+{
+  const store = new TaskStore();
+  assert.throws(
+    () => store.listTasks({ category: '' }),
+    /Category filter must be a non-empty string/
+  );
+  console.log('✓ TaskStore.listTasks: error on empty category filter');
 }
 
 // TaskStore: listTasks error on invalid sortBy

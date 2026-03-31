@@ -4,6 +4,7 @@ import {
   validateDescription,
   validateStatus,
   validatePriority,
+  validateCategory,
   validateFilterOptions,
   validateSortOptions,
 } from '../src/utils/validators.js';
@@ -166,6 +167,30 @@ import {
   console.log('✓ validatePriority: returns false for non-string types');
 }
 
+// validateCategory: returns true for non-empty strings
+{
+  assert.strictEqual(validateCategory('work'), true);
+  assert.strictEqual(validateCategory('personal'), true);
+  assert.strictEqual(validateCategory('general'), true);
+  assert.strictEqual(validateCategory('a'), true);
+  console.log('✓ validateCategory: returns true for non-empty strings');
+}
+
+// validateCategory: returns false for empty string
+{
+  assert.strictEqual(validateCategory(''), false);
+  assert.strictEqual(validateCategory('   '), false);
+  console.log('✓ validateCategory: returns false for empty string');
+}
+
+// validateCategory: returns false for non-string
+{
+  assert.strictEqual(validateCategory(null), false);
+  assert.strictEqual(validateCategory(123), false);
+  assert.strictEqual(validateCategory(undefined), false);
+  console.log('✓ validateCategory: returns false for non-string types');
+}
+
 // validateFilterOptions: accepts valid status
 {
   assert.doesNotThrow(() => validateFilterOptions({ status: 'todo' }));
@@ -223,6 +248,28 @@ import {
 {
   assert.doesNotThrow(() => validateFilterOptions({ priority: undefined }));
   console.log('✓ validateFilterOptions: ignores undefined priority');
+}
+
+// validateFilterOptions: accepts valid category
+{
+  assert.doesNotThrow(() => validateFilterOptions({ category: 'work' }));
+  assert.doesNotThrow(() => validateFilterOptions({ category: 'personal' }));
+  console.log('✓ validateFilterOptions: accepts valid category filter');
+}
+
+// validateFilterOptions: error on empty category
+{
+  assert.throws(
+    () => validateFilterOptions({ category: '' }),
+    /Category filter must be a non-empty string/
+  );
+  console.log('✓ validateFilterOptions: error on empty category filter');
+}
+
+// validateFilterOptions: ignores undefined category
+{
+  assert.doesNotThrow(() => validateFilterOptions({ category: undefined }));
+  console.log('✓ validateFilterOptions: ignores undefined category');
 }
 
 // validateSortOptions: accepts valid sortBy fields

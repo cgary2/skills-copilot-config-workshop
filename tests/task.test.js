@@ -260,20 +260,24 @@ import { createTask, updateTaskFields, STATUSES, PRIORITIES } from '../src/model
   console.log('✓ updateTaskFields: prevents createdAt modification');
 }
 
-// updateTaskFields: allow same id (no-op)
+// updateTaskFields: same id still rejected (immutable)
 {
   const original = createTask('Title');
-  const updated = updateTaskFields(original, { id: original.id });
-  assert.strictEqual(updated.id, original.id);
-  console.log('✓ updateTaskFields: allows same id (no-op)');
+  assert.throws(
+    () => updateTaskFields(original, { id: original.id }),
+    /Task id is immutable/
+  );
+  console.log('✓ updateTaskFields: rejects same id update as immutable');
 }
 
-// updateTaskFields: allow same createdAt (no-op)
+// updateTaskFields: same createdAt still rejected (immutable)
 {
   const original = createTask('Title');
-  const updated = updateTaskFields(original, { createdAt: original.createdAt });
-  assert.strictEqual(updated.createdAt, original.createdAt);
-  console.log('✓ updateTaskFields: allows same createdAt (no-op)');
+  assert.throws(
+    () => updateTaskFields(original, { createdAt: original.createdAt }),
+    /Task createdAt is immutable/
+  );
+  console.log('✓ updateTaskFields: rejects same createdAt update as immutable');
 }
 
 // updateTaskFields: original object unchanged
@@ -498,6 +502,7 @@ import { createTask, updateTaskFields, STATUSES, PRIORITIES } from '../src/model
   console.log('✓ createTask: undefined priority triggers default medium');
 }
 
+
 // createTask: many rapid creations have unique IDs
 {
   const tasks = [];
@@ -522,14 +527,17 @@ import { createTask, updateTaskFields, STATUSES, PRIORITIES } from '../src/model
   console.log('✓ createTask: rapid creations have chronological timestamps');
 }
 
-// updateTaskFields: empty update object (no-op)
+// updateTaskFields: empty update object keeps content and refreshes updatedAt
 {
   const original = createTask('Title', 'Desc', 'todo', 'low');
-  const originalUpdatedAt = original.updatedAt;
   const updated = updateTaskFields(original, {});
-  assert.deepStrictEqual(updated, original);
-  assert.strictEqual(updated.updatedAt, original.updatedAt);
-  console.log('✓ updateTaskFields: empty object returns unchanged task');
+  assert.strictEqual(updated.id, original.id);
+  assert.strictEqual(updated.title, original.title);
+  assert.strictEqual(updated.description, original.description);
+  assert.strictEqual(updated.status, original.status);
+  assert.strictEqual(updated.priority, original.priority);
+  assert.match(updated.updatedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  console.log('✓ updateTaskFields: empty object refreshes updatedAt');
 }
 
 // updateTaskFields: null values in update object throw error
@@ -550,13 +558,14 @@ import { createTask, updateTaskFields, STATUSES, PRIORITIES } from '../src/model
   console.log('✓ updateTaskFields: missing fields remain unchanged');
 }
 
-// updateTaskFields: unknown fields are ignored
+// updateTaskFields: unknown fields are rejected
 {
   const original = createTask('Title');
-  const updated = updateTaskFields(original, { unknownField: 'value', title: 'New Title' });
-  assert.strictEqual(updated.title, 'New Title');
-  assert.strictEqual(updated.unknownField, undefined);
-  console.log('✓ updateTaskFields: unknown fields are ignored');
+  assert.throws(
+    () => updateTaskFields(original, { unknownField: 'value', title: 'New Title' }),
+    /Cannot update unknown field/
+  );
+  console.log('✓ updateTaskFields: unknown fields are rejected');
 }
 
 // updateTaskFields: multiple sequential updates accumulate
@@ -629,6 +638,16 @@ import { createTask, updateTaskFields, STATUSES, PRIORITIES } from '../src/model
     assert.strictEqual(updated.priority, priority);
   }
   console.log('✓ updateTaskFields: all priorities are updatable');
+}
+
+// updateTaskFields: category key is rejected as unknown
+{
+  const original = createTask('Title');
+  assert.throws(
+    () => updateTaskFields(original, { category: 'urgent' }),
+    /Cannot update unknown field: category/
+  );
+  console.log('✓ updateTaskFields: rejects category as unknown field');
 }
 
 // updateTaskFields: cyclic updates preserve immutability
