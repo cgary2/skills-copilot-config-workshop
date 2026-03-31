@@ -54,4 +54,3 @@ export function colorPriority(priority) {
   }
   return chalk.dim(priority);
 }
-}
