@@ -1,4 +1,5 @@
 import { TaskStore } from './services/taskService.js';
+import { colorPriority, colorStatus } from './utils/colors.js';
 
 /**
  * Task Manager CLI - Entry point demonstrating all features
@@ -48,7 +49,7 @@ async function main() {
     const allTasks = store.listTasks();
     console.log(`Found ${allTasks.length} tasks:`);
     allTasks.forEach(task => {
-      console.log(`  - [${task.status}] ${task.title} (Priority: ${task.priority})`);
+      console.log(`  - [${colorStatus(task.status)}] ${task.title} (Priority: ${colorPriority(task.priority)})`);
     });
     console.log();
 
@@ -66,7 +67,7 @@ async function main() {
     const highPriorityTasks = store.listTasks({ priority: 'high' });
     console.log(`Found ${highPriorityTasks.length} high-priority tasks:`);
     highPriorityTasks.forEach(task => {
-      console.log(`  - [${task.status}] ${task.title}`);
+      console.log(`  - [${colorStatus(task.status)}] ${task.title}`);
     });
     console.log();
 
@@ -84,7 +85,7 @@ async function main() {
     const byPriority = store.listTasks({ sortBy: 'priority', order: 'desc' });
     console.log('Tasks sorted by priority:');
     byPriority.forEach(task => {
-      console.log(`  - [${task.priority}] ${task.title}`);
+      console.log(`  - [${colorPriority(task.priority)}] ${task.title}`);
     });
     console.log();
 
@@ -105,8 +106,8 @@ async function main() {
       priority: 'medium',
     });
     console.log(`✓ Updated task "${task1.title}":`);
-    console.log(`  - Status: todo → ${updatedTask.status}`);
-    console.log(`  - Priority: high → ${updatedTask.priority}`);
+    console.log(`  - Status: ${colorStatus('todo')} → ${colorStatus(updatedTask.status)}`);
+    console.log(`  - Priority: ${colorPriority('high')} → ${colorPriority(updatedTask.priority)}`);
     console.log(`  - updatedAt changed: ${task1.updatedAt !== updatedTask.updatedAt}\n`);
 
     // Feature 9: Retrieve a single task
@@ -114,8 +115,8 @@ async function main() {
     const retrieved = store.getTaskById(task2.id);
     console.log(`✓ Retrieved task: ${retrieved.title}`);
     console.log(`  - Description: ${retrieved.description}`);
-    console.log(`  - Status: ${retrieved.status}`);
-    console.log(`  - Priority: ${retrieved.priority}\n`);
+    console.log(`  - Status: ${colorStatus(retrieved.status)}`);
+    console.log(`  - Priority: ${colorPriority(retrieved.priority)}\n`);
 
     // Feature 10: Delete a task
     console.log('10. Deleting a task...');
@@ -127,7 +128,9 @@ async function main() {
     console.log('11. Final task list:');
     const finalTasks = store.getAllTasks();
     finalTasks.forEach((task, index) => {
-      console.log(`  ${index + 1}. [${task.status}] ${task.title} (Priority: ${task.priority})`);
+      console.log(
+        `  ${index + 1}. [${colorStatus(task.status)}] ${task.title} (Priority: ${colorPriority(task.priority)})`
+      );
     });
     console.log();
 
